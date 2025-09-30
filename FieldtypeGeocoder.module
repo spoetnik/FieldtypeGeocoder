@@ -34,7 +34,7 @@ use Http\Client\Curl\Client;
 
 class FieldtypeGeocoder extends Fieldtype implements Module, ConfigurableModule {
 
-	public static function getModuleInfo() {
+    public static function getModuleInfo() {
 		return array(
 			'title' => 'Geocoder',
 			'version' => 105,
@@ -57,13 +57,18 @@ class FieldtypeGeocoder extends Fieldtype implements Module, ConfigurableModule 
 	public function getDatabaseSchema(Field $field): array {
 
 		$schema = parent::getDatabaseSchema($field);
-		$schema['data'] = 'VARCHAR(255) NOT NULL DEFAULT ""';
+		$schema['data'] = 'text NOT NULL';
 		$schema['formatted'] = 'TEXT NOT NULL';
 		$schema['geodata'] = 'JSON';
 		$schema['lat'] = "FLOAT(10,6) DEFAULT NULL"; // latitude
 		$schema['lng'] = "FLOAT(10,6) DEFAULT NULL"; // longitude
 		$schema['provider'] = "TINYTEXT"; // Provider (Google/Mapbox etc)
 		$schema['status'] = "INT(10) unsigned NOT NULL DEFAULT 1"; // geocode status
+		// Make sure keys array exists
+		if (!isset($schema['keys']) || !is_array($schema['keys'])) {
+			$schema['keys'] = [];
+		}
+		$schema['keys']['fulltext_data'] = 'FULLTEXT KEY fulltext_data (data)'; // add FULLTEXT index on the data column
 
 		return $schema;
 	}
